@@ -1,4 +1,4 @@
-/*first prototype*/
+/*first prototype - gcc pmacct_ptagmap_p0.c -o pmacct_ptagmap_p0 -ljansson*/
 
 #include <string.h>
 #include <jansson.h>
