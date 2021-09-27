@@ -1,4 +1,4 @@
-# Summary
+## Summary
 
 PMACCT's pre-tagging function can be used to enrich the data stream:
 
@@ -15,4 +15,19 @@ More about PMACCT's pre-tagging can be found [here](https://github.com/scuzzilla
 
 ---
 
+## Current JSON output
 
+The way pre-tagging is currently developed doesn't easily allow to load the "multi-labels" string in a 
+database without a sort of post-processing job in charge of manipulating the string itself (like splitting the string
+into two sub-strings).
+
+Here below is an abstraction of the current data-stream JSON output.
+
+```JSON
+{
+  "label": "node_id_1,platform_id_1"
+  "other1": "other1"
+  "other2": "other2"
+  "other3": "other3"
+}
+```
