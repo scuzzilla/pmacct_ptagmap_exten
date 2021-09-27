@@ -1,3 +1,5 @@
+/*first prototype*/
+
 #include <string.h>
 #include <jansson.h>
 
