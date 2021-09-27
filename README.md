@@ -41,9 +41,9 @@ Here below is an abstraction of the future data-stream JSON ouput.
 ```JSON
 {
   "label": {
-    "node_id_1",
-    "platform_id_1"
-  }
+    "node_id": "node_id_1",
+    "platform_id": "platform_id_1"
+  },
   "other1": "other1",
   "other2": "other2",
   "other3": "other3"
