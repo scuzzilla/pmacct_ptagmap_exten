@@ -32,3 +32,20 @@ Here below is an abstraction of the current data-stream JSON output.
 ```
 
 ### Future JSON output
+
+The main goal of extending the PMACCT's pre-tagging functionality is to avoid any kind of post-processing job on the 
+produced "multi-labels" string.
+
+Here below is an abstraction of the future data-stream JSON ouput.
+
+```JSON
+{
+  "label": {
+    "node_id_1",
+    "platform_id_1"
+  }
+  "other1": "other1",
+  "other2": "other2",
+  "other3": "other3"
+}
+```
