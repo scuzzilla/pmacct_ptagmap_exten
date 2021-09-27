@@ -25,9 +25,9 @@ Here below is an abstraction of the current data-stream JSON output.
 
 ```JSON
 {
-  "label": "node_id_1,platform_id_1"
-  "other1": "other1"
-  "other2": "other2"
+  "label": "node_id_1,platform_id_1",
+  "other1": "other1",
+  "other2": "other2",
   "other3": "other3"
 }
 ```
