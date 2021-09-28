@@ -11,12 +11,13 @@ char **split_label(char *, char **,  int);
 
 /* Global Variables */
 const int SET_LABEL_STACK = 2;
+const char *DELIM = ",";
+
 
 int
 main(void)
 {
   char label[] = "node_id_key,node_id_value,platform_id_key,platform_id_value";
-  char label[] = "";
   char *label_tokens_kv[SET_LABEL_STACK * 2];
   char **tkns = split_label(label, label_tokens_kv, SET_LABEL_STACK);
 
@@ -79,7 +80,7 @@ char **split_label(char *label, char **tokens, int set_label_amount)
   tokens[set_label_amount * 2];
 
   int idx = 0;
-  for (char *token = strtok(label,","); token != NULL; token = strtok(NULL, ","))
+  for (char *token = strtok(label, DELIM); token != NULL; token = strtok(NULL, DELIM))
   {
     tokens[idx] = token;
     idx++;
