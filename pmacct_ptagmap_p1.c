@@ -10,14 +10,14 @@
 char **split_label(char *, char **,  int);
 
 /* Global Variables */
-const int set_label_stack = 2;
+const int SET_LABEL_STACK = 2;
 
 int
 main(void)
 {
   char label[] = "node_id_key,node_id_value,platform_id_key,platform_id_value";
   char *label_tokens_kv[set_label_stack * 2];
-  char **tkns = split_label(label, label_tokens_kv, set_label_stack);
+  char **tkns = split_label(label, label_tokens_kv, SET_LABEL_STACK);
 
   char other1[] = "other1";
   char other2[] = "other2";
@@ -73,9 +73,9 @@ main(void)
  * values configured within the pretag.map file; plus the integer referring to the amount of set_label declarations.
  * It's returning an array of *char each one of them pointing to a token generated from the master_label */
 
-char **split_label(char *label, char **tokens, int set_labels)
+char **split_label(char *label, char **tokens, int set_label_amount)
 {
-  tokens[set_labels * 2];
+  tokens[set_label_amount * 2];
 
   int idx = 0;
   for (char *token = strtok(label,","); token != NULL; token = strtok(NULL, ","))
