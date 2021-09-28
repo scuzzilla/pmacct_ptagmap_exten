@@ -16,7 +16,7 @@ int
 main(void)
 {
   char label[] = "node_id_key,node_id_value,platform_id_key,platform_id_value";
-  char *label_tokens_kv[set_label_stack * 2];
+  char *label_tokens_kv[SET_LABEL_STACK * 2];
   char **tkns = split_label(label, label_tokens_kv, SET_LABEL_STACK);
 
   char other1[] = "other1";
