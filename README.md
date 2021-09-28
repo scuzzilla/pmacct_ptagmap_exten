@@ -4,11 +4,13 @@ PMACCT's pre-tagging function can be used to enrich the data stream:
 
 In the use case below when the IP address \<ip\> is matched a new label is generated & added to the data stream. 
 The final label is going to be a string composed by the two fields specified within the \<set\_label\> statements. 
-Comma (",") is used as a field separator: "node\_id\_1,platform\_id\_1".
+- Comma (",") is currently used as a field separator between the two lables: "\<key1,value1\>,\<key2,value2\>".
+- Each label is composed of two fields (key and value) disposed in a strict order and separated by a delimiter: 
+"\<key,value\>" 
 
 ```text
-set_label=<node_id_1>        ip=<specific_ip>    label=<node_id>  jeq=<platform_id>
-set_label=<platform_id_1>    label=<platform_id>
+set_label=<key1,value1>    ip=<specific_ip>     label=<node_id>  jeq=<platform_id>
+set_label=<key2,value2>    label=<platform_id>
 ```
 
 More about PMACCT's pre-tagging can be found [here](https://github.com/scuzzilla/pmacct/blob/master/CONFIG-KEYS).
@@ -24,7 +26,7 @@ Here below is an abstraction of the current data-stream JSON output.
 
 ```JSON
 {
-  "label": "node_id_1,platform_id_1",
+  "label": "key1,value1,key2,value2",
   "other1": "other1",
   "other2": "other2",
   "other3": "other3"
@@ -41,8 +43,8 @@ Here below is an abstraction of the future data-stream JSON ouput.
 ```JSON
 {
   "label": {
-    "node_id": "node_id_1",
-    "platform_id": "platform_id_1"
+    "key1": "value1",
+    "key2": "value2"
   },
   "other1": "other1",
   "other2": "other2",
