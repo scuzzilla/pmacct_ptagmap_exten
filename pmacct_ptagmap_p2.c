@@ -62,7 +62,7 @@ create_label(char *tkn_key, char *tkn_value)
 }
 
 struct label *
-append_label(struct label * end, struct label * new_label_ptr)
+append_label(struct label *end, struct label *new_label_ptr)
 {
   end->next = new_label_ptr;
   return(end->next);
@@ -85,8 +85,8 @@ print_labels(struct label *start)
 void
 free_labels(struct label *start)
 {
-  struct label * ptr = start;
-  struct label * tmp;
+  struct label *ptr = start;
+  struct label *tmp;
   while (ptr!=NULL) {
     tmp = ptr->next;
     free(ptr);
