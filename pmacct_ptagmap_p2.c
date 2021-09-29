@@ -69,13 +69,13 @@ struct label *append_label(struct label * end, struct label * new_label_ptr)
 /*
 void print_labels(struct label *start)
 {
-	struct label *ptr;
+  struct label *ptr;
   ptr = start;
 
-	while(ptr != NULL) {
+  while(ptr != NULL) {
     printf("%s: %s\n", ptr->key, ptr->value);
     ptr = ptr->next;
-	}
+  }
 }
 */
 
