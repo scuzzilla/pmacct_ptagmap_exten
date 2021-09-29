@@ -3,10 +3,10 @@
 PMACCT's pre-tagging function can be used to enrich the data stream:
 
 In the use case below when the IP address \<ip\> is matched a new label is generated & added to the data stream. 
-The final label is going to be a string composed by the two fields specified within the \<set\_label\> statements. 
+The final label is going to be a string composed by the N fields specified within the \<set\_label\> statements. 
 - Comma (",") is currently used as a field separator between the two lables: "\<key1,value1\>,\<key2,value2\>, ... , 
 \<keyN, valueN\>".
-- Each label is composed of two fields (key and value) disposed in a strict order, first key second label,  and 
+- Each sub-label is composed of two fields (key and value) disposed in a strict order, first key second label,  and 
 separated by a delimiter: "\<key,value\>" 
 
 ```text

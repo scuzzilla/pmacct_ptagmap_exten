@@ -78,7 +78,8 @@ main(void)
  * It's returning an array of *char each one of them pointing to a token generated from the master_label 
  */
 
-char **split_label(char *label, char **tokens, int set_label_amount)
+char**
+split_label(char *label, char **tokens, int set_label_amount)
 {
   tokens[set_label_amount * 2];
 
