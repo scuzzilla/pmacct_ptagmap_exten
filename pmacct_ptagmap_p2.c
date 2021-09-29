@@ -6,6 +6,11 @@
 #include <jansson.h>
 
 
+/* Global Variables */
+char LABEL[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
+const int MAX_TOCKENS = 256;
+const char *DELIM = ",";
+
 /* Data structures */
 struct label {
   char *key;
@@ -13,122 +18,36 @@ struct label {
   struct label *next;
 };
 
-/* Function prototypes - split logic */
-char **split_label(char *, char **,  int);
-
 /* Function prototypes - linked-list logic */
 struct label *create_label(char *, char *);
 struct label *append_label(struct label *, struct label *);
+struct label *labels_to_linkedlist(char *);
 void print_labels(struct label *);
-
-/* Global Variables */
-const int SET_LABEL_STACK = 2;
-const int MAX_STACKED_LABELS = 256;
-const char *DELIM = ",";
+void free_labels(struct label *);
+json_t *create_json_labels(struct label *);
 
 
 int
 main(void)
 {
-  char label[] = "node_id_key,node_id_value,platform_id_key,platform_id_value";
-  char *token = NULL;
-  char *tokens[MAX_STACKED_LABELS];
-  struct label *start, *new_label_ptr, *end, *tmp;
-
-  //char *label_tokens_kv[SET_LABEL_STACK * 2];
-  //char **tkns = split_label(label, label_tokens_kv, SET_LABEL_STACK);
-
-  int idx_0 = 0;
-  for (token = strtok(label, DELIM); token != NULL; token = strtok(NULL, DELIM))
-  {
-    tokens[idx_0] = token;
-    idx_0++;
-  }
-
-  start = create_label(tokens[0], tokens[1]);
-  end = start;
-
-  new_label_ptr = create_label(tokens[2], tokens[3]);
-  end = append_label(end, new_label_ptr);
-
-  print_labels(start);
-  tmp = start->next;
-
-  free(start);
-
-  start = tmp;
-  tmp = start->next;
-
-  free(start);
-  free(tmp);
-
-  /*char other1[] = "other1";
-  char other2[] = "other2";
-  char other3[] = "other3";
+  struct label *start = labels_to_linkedlist(LABEL);
 
   json_t *root_l0 = json_object();
-  json_t *root_l1 = json_object();
+  json_t *root_l1 = create_json_labels(start);
   json_t *j_str_tmp = NULL;
-  //printf("%s\n", str);
-
-  //printf("%s\n", tkns[0]);
-  //printf("%s\n", tkns[1]);
-  //printf("%s\n", tkns[2]);
-  //printf("%s\n", tkns[3]);
-
-  j_str_tmp = json_string(other1);
-  json_object_set_new(root_l0, "other1", j_str_tmp);
-
-  j_str_tmp = json_string(other2);
-  json_object_set_new(root_l0, "other2", j_str_tmp);
-
-  j_str_tmp = json_string(other3);
-  json_object_set_new(root_l0, "other3", j_str_tmp);
-
-  j_str_tmp = json_string(tkns[1]);
-  json_object_set_new(root_l1, tkns[0], j_str_tmp);
-
-  j_str_tmp = json_string(tkns[3]);
-  json_object_set_new(root_l1, tkns[2], j_str_tmp);
-
-  char *j_dump_l0  = json_dumps(root_l0, JSON_INDENT(2));
-  printf("%s\n", j_dump_l0);
-  free(j_dump_l0);
 
   json_object_set_new(root_l0, "label", root_l1);
-
-  char *j_dump_l1  = json_dumps(root_l1, JSON_INDENT(2));
-  printf("%s\n", j_dump_l1);
-  free(j_dump_l1);
 
   char *j_dump_final  = json_dumps(root_l0, JSON_INDENT(2));
   printf("%s\n", j_dump_final);
   free(j_dump_final);
 
   json_decref(root_l0);
-  json_decref(root_l1);*/
+  free_labels(start);
 
   return 0;
 }
 
-
-/* Is receiving in input a "well formatted" string (master_label) resulting from the concatenation of set_label's
- * values configured within the pretag.map file; plus the integer referring to the amount of set_label declarations.
- * It's returning an array of *char each one of them pointing to a token generated from the master_label */
-
-char **split_label(char *label, char **tokens, int set_label_amount)
-{
-  tokens[set_label_amount * 2];
-
-  int idx = 0;
-  for (char *token = strtok(label, DELIM); token != NULL; token = strtok(NULL, DELIM))
-  {
-    tokens[idx] = token;
-    idx++;
-  }
-
-  return tokens;
-}
 
 struct label *create_label(char *tkn_key, char *tkn_value) {
   struct label *ptr;
@@ -153,4 +72,60 @@ void print_labels(struct label *start)
 		printf("%s: %s\n", ptr->key, ptr->value);
 		ptr = ptr->next;
 	}
+}
+
+void free_labels(struct label *start) {
+  struct label * ptr = start;
+  struct label * tmp;
+  while (ptr!=NULL) {
+    tmp = ptr->next;
+    free(ptr);
+    ptr = tmp;
+  }
+}
+
+json_t *create_json_labels(struct label *start)
+{
+	struct label *ptr;
+  ptr = start;
+  json_t *root = json_object();
+  json_t *j_str_tmp = NULL;
+
+	while(ptr != NULL) {
+    j_str_tmp = json_string(ptr->value);
+    json_object_set_new(root, ptr->key, j_str_tmp);
+		ptr = ptr->next;
+	}
+
+  return root;
+}
+
+struct label *labels_to_linkedlist(char *label)
+{
+  char *token = NULL;
+  char *tokens[MAX_TOCKENS];
+  struct label *start, *new_label_ptr, *end;
+
+  int idx_0 = 0;
+  for (token = strtok(label, DELIM); token != NULL; token = strtok(NULL, DELIM))
+  {
+    tokens[idx_0] = token;
+    idx_0++;
+  }
+
+  /* Head of the labels' linked list */
+  start = create_label(tokens[0], tokens[1]);
+  end = start;
+
+  int idx_1 = 2;
+  while (idx_1 < idx_0)
+  {
+    //printf("%s: %s\n", tokens[idx_1], tokens[idx_1 + 1]);
+    new_label_ptr = create_label(tokens[idx_1], tokens[idx_1 + 1]);
+    end = append_label(end, new_label_ptr);
+
+    idx_1 = idx_1 + 2;
+  }
+
+  return start;
 }
