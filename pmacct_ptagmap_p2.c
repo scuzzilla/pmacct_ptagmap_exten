@@ -136,7 +136,7 @@ labels_to_linked_list(char *label)
     new_label_ptr = create_label(tokens[idx_1], tokens[idx_1 + 1]);
     end = append_label(end, new_label_ptr);
 
-    idx_1 = idx_1 + 2;
+    idx_1 += 2;
   }
 
   return start;
