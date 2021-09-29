@@ -92,16 +92,16 @@ void free_labels(struct label *start)
 
 json_t *labels_to_json_obj(struct label *start)
 {
-	struct label *ptr;
+  struct label *ptr;
   ptr = start;
   json_t *root = json_object();
   json_t *j_str_tmp = NULL;
 
-	while(ptr != NULL) {
+  while(ptr != NULL) {
     j_str_tmp = json_string(ptr->value);
     json_object_set_new(root, ptr->key, j_str_tmp);
     ptr = ptr->next;
-	}
+  }
 
   return root;
 }
