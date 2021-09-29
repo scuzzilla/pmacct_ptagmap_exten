@@ -1,6 +1,7 @@
 /*
  * second prototype - split logic
- * gcc pmacct_ptagmap_p1.c -o pmacct_ptagmap_p1 -ljansson */
+ * gcc pmacct_ptagmap_p1.c -o pmacct_ptagmap_p1 -ljansson
+ */
 
 #include <string.h>
 #include <jansson.h>
@@ -71,9 +72,11 @@ main(void)
 }
 
 
-/* Is receiving in input a "well formatted" string (master_label) resulting from the concatenation of set_label's
+/*
+ * Is receiving in input a "well formatted" string (master_label) resulting from the concatenation of set_label's
  * values configured within the pretag.map file; plus the integer referring to the amount of set_label declarations.
- * It's returning an array of *char each one of them pointing to a token generated from the master_label */
+ * It's returning an array of *char each one of them pointing to a token generated from the master_label 
+ */
 
 char **split_label(char *label, char **tokens, int set_label_amount)
 {

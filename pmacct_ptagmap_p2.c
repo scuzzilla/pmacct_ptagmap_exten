@@ -1,7 +1,7 @@
 /*
  * third prototype - linked-list logic
  * gcc pmacct_ptagmap_p2.c -o pmacct_ptagmap_p2 -ljansson
-*/
+ */
 
 #include <string.h>
 #include <jansson.h>
