@@ -50,7 +50,8 @@ main(void)
 }
 
 
-struct label *create_label(char *tkn_key, char *tkn_value)
+struct label *
+create_label(char *tkn_key, char *tkn_value)
 {
   struct label *ptr;
   ptr = (struct label *) malloc(sizeof(struct label));
@@ -60,14 +61,16 @@ struct label *create_label(char *tkn_key, char *tkn_value)
   return ptr;
 }
 
-struct label *append_label(struct label * end, struct label * new_label_ptr)
+struct label *
+append_label(struct label * end, struct label * new_label_ptr)
 {
   end->next = new_label_ptr;
   return(end->next);
 }
 
 /*
-void print_labels(struct label *start)
+void
+print_labels(struct label *start)
 {
   struct label *ptr;
   ptr = start;
@@ -79,7 +82,8 @@ void print_labels(struct label *start)
 }
 */
 
-void free_labels(struct label *start)
+void
+free_labels(struct label *start)
 {
   struct label * ptr = start;
   struct label * tmp;
@@ -90,7 +94,8 @@ void free_labels(struct label *start)
   }
 }
 
-json_t *labels_to_json_obj(struct label *start)
+json_t *
+labels_to_json_obj(struct label *start)
 {
   struct label *ptr;
   ptr = start;
@@ -106,7 +111,8 @@ json_t *labels_to_json_obj(struct label *start)
   return root;
 }
 
-struct label *labels_to_linked_list(char *label)
+struct label *
+labels_to_linked_list(char *label)
 {
   char *token = NULL;
   char *tokens[MAX_TOCKENS];
