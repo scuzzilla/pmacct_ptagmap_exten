@@ -37,12 +37,12 @@ main(void)
   avro_writer_t avro_schema_writer = NULL;
 
   avro_schema_fp = fopen("avro_schema.dump", "w");
-	avro_schema_writer = avro_writer_file(avro_schema_fp);
+  avro_schema_writer = avro_writer_file(avro_schema_fp);
   avro_schema_to_json(test_record, avro_schema_writer);
 
   fclose(avro_schema_fp);
 
-	avro_file_writer_t db;
+  avro_file_writer_t db;
   const char *dbname = "avro_record.db";
 
   remove(dbname);
