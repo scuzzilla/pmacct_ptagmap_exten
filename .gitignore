@@ -53,3 +53,7 @@ dkms.conf
 
 # VIM swap files
 *.swp
+
+# Avro
+*.db
+*.dump
