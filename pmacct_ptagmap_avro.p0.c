@@ -58,5 +58,10 @@ main(void)
   avro_value_get_string(&test_value, &p, &size);
   fprintf(stdout, "%s\n", p);
 
+  avro_value_decref(&test_value);
+  avro_value_decref(&test_record_value);
+  avro_value_iface_decref(record_class);
+  avro_schema_decref(test_record);
+
   return 0;
 }
