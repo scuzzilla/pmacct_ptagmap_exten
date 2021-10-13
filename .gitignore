@@ -57,3 +57,6 @@ dkms.conf
 # Avro
 *.db
 *.dump
+
+# bin
+bin/*
