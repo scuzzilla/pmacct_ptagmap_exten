@@ -38,8 +38,10 @@ const char *DELIM = ",";
 //
 // --- AVRO global variables ---
 //
+struct label *start;
 avro_schema_t sc_type_record, sc_type_map, sc_type_string;
 avro_value_t v_type_string, v_type_map, v_type_record;
+avro_value_iface_t *if_type_record, *if_type_map, *if_type_string;
 
 /* Data structures */
 struct label {
@@ -57,111 +59,21 @@ void free_labels(struct label *);
 //
 // --- AVRO prototypes ---
 //
+void compose_label_avro_schema(void);
+int compose_label_avro_data(struct label *);
+int print_label_avro_data(struct label *);
+void free_label_avro_data_memory(void);
 
 
 int
 main(void)
 {
-  struct label *start = labels_to_linked_list(LABELS);
-  struct label *ptr;
-  printf("start -> linked-list:\n");
-  print_labels(start);
-  printf("\n\n---\n");
+  start = labels_to_linked_list(LABELS);
 
-  sc_type_string = avro_schema_string();
-  sc_type_map = avro_schema_map(sc_type_string);
-  sc_type_record = avro_schema_record("acct_data", NULL);
-  avro_schema_record_field_append(sc_type_record, "label", sc_type_map);
-
-  FILE *avro_schema_fp = NULL;
-  avro_writer_t avro_schema_writer = NULL;
-  avro_schema_fp = fopen("avro_schema.dump", "w");
-  avro_schema_writer = avro_writer_file(avro_schema_fp);
-  avro_schema_to_json(sc_type_record, avro_schema_writer);
-  fclose(avro_schema_fp);
-
-  avro_value_iface_t *if_type_record = avro_generic_class_from_schema(sc_type_record);
-  avro_value_iface_t *if_type_map = avro_generic_class_from_schema(sc_type_map);
-  avro_value_iface_t *if_type_string = avro_generic_class_from_schema(sc_type_string);
-
-  avro_generic_value_new(if_type_record, &v_type_record);
-  avro_generic_value_new(if_type_map, &v_type_map);
-  avro_generic_value_new(if_type_string, &v_type_string);
-
-  avro_file_writer_t db_w;
-  const char *dbname = "avro_record.db";
-
-  remove(dbname);
-  int rval_w = avro_file_writer_create(dbname, sc_type_record, &db_w);
-  if (rval_w)
-  {
-    fprintf(stderr, "Error: %s\n", avro_strerror());
-    return -1;
-	}
-
-  size_t  map_size;
-  avro_value_get_size(&v_type_map, &map_size);
-  printf("before: %u\n", map_size);
-
-  ptr = start;
-  while (ptr != NULL)
-  {
-    if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
-    {
-      if (avro_value_add(&v_type_map, ptr->key, &v_type_string, NULL, NULL) == 0)
-      {
-        avro_value_set_string(&v_type_string, ptr->value);
-        avro_file_writer_append_value(db_w, &v_type_record);
-      }
-    }
-    ptr = ptr->next;
-  }
-
-  avro_file_writer_flush(db_w);
-  avro_file_writer_close(db_w);
-
-  avro_value_get_size(&v_type_map, &map_size);
-  printf("after: %u\n", map_size);
-
-  avro_file_reader_t db_r;
-  int rval_r = avro_file_reader(dbname, &db_r);
-  if (rval_r)
-  {
-    fprintf(stderr, "Error: %s\n", avro_strerror());
-    return -1;
-	}
-
-  avro_file_reader_read_value(db_r, &v_type_record);
-  size_t value_size;
-  const char *p = NULL;
-
-  ptr = start;
-  while (ptr != NULL)
-  {
-    if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
-    {
-      if (avro_value_get_by_name(&v_type_map, ptr->key, &v_type_string, NULL) == 0)
-      {
-        avro_value_get_string(&v_type_string, &p, &value_size);
-      }
-    }
-    //fprintf(stdout, "%u\n", value_size);
-    fprintf(stdout, "%s:  %s\n", ptr->key, p);
-    ptr = ptr->next;
-  }
-
-  avro_file_reader_close(db_r);
-
-  free_labels(start);
-  avro_value_iface_decref(if_type_record); //no need to decref the associated value
-  avro_value_iface_decref(if_type_map); //no need to decref the associated value
-  avro_value_iface_decref(if_type_string); //no need to decref the associated value
-  avro_schema_decref(sc_type_record);
-  avro_schema_decref(sc_type_map);
-  avro_schema_decref(sc_type_string);
-  //avro_value_decref(&v_type_record);
-  //avro_value_decref(&v_type_map);
-  //avro_value_decref(&v_type_string);
+  compose_label_avro_schema();
+  compose_label_avro_data(start);
+  print_label_avro_data(start);
+  free_label_avro_data_memory();
 
   return 0;
 }
@@ -236,4 +148,133 @@ labels_to_linked_list(char *label)
   }
 
   return start;
+}
+//
+// --- AVRO functions ---
+//
+void
+compose_label_avro_schema(void)
+{
+  sc_type_string = avro_schema_string();
+  sc_type_map = avro_schema_map(sc_type_string);
+  sc_type_record = avro_schema_record("acct_data", NULL);
+  avro_schema_record_field_append(sc_type_record, "label", sc_type_map);
+
+  FILE *avro_schema_fp = NULL;
+  avro_writer_t avro_schema_writer = NULL;
+  avro_schema_fp = fopen("avro_schema.dump", "w");
+  avro_schema_writer = avro_writer_file(avro_schema_fp);
+  avro_schema_to_json(sc_type_record, avro_schema_writer);
+  fclose(avro_schema_fp);
+}
+
+
+int
+compose_label_avro_data(struct label *start)
+{
+  struct label *ptr;
+
+  printf("start -> linked-list:\n");
+  print_labels(start);
+  printf("\n\n---\n");
+
+  if_type_record = avro_generic_class_from_schema(sc_type_record);
+  if_type_map = avro_generic_class_from_schema(sc_type_map);
+  if_type_string = avro_generic_class_from_schema(sc_type_string);
+
+  avro_generic_value_new(if_type_record, &v_type_record);
+  avro_generic_value_new(if_type_map, &v_type_map);
+  avro_generic_value_new(if_type_string, &v_type_string);
+
+  avro_file_writer_t db_w;
+  const char *dbname = "avro_record.db";
+
+  remove(dbname);
+  int rval_w = avro_file_writer_create(dbname, sc_type_record, &db_w);
+  if (rval_w)
+  {
+    fprintf(stderr, "Error: %s\n", avro_strerror());
+    return -1;
+	}
+
+  size_t  map_size;
+  avro_value_get_size(&v_type_map, &map_size);
+  printf("before: %u\n", map_size);
+
+  ptr = start;
+  while (ptr != NULL)
+  {
+    if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
+    {
+      if (avro_value_add(&v_type_map, ptr->key, &v_type_string, NULL, NULL) == 0)
+      {
+        avro_value_set_string(&v_type_string, ptr->value);
+        avro_file_writer_append_value(db_w, &v_type_record);
+      }
+    }
+    ptr = ptr->next;
+  }
+
+  avro_file_writer_flush(db_w);
+  avro_file_writer_close(db_w);
+
+  avro_value_get_size(&v_type_map, &map_size);
+  printf("after: %u\n", map_size);
+
+  return 0;
+}
+
+
+int
+print_label_avro_data(struct label *start)
+{
+  struct label *ptr;
+
+  const char *dbname = "avro_record.db";
+  avro_file_reader_t db_r;
+  int rval_r = avro_file_reader(dbname, &db_r);
+  if (rval_r)
+  {
+    fprintf(stderr, "Error: %s\n", avro_strerror());
+    return -1;
+	}
+
+  avro_file_reader_read_value(db_r, &v_type_record);
+  size_t value_size;
+  const char *p = NULL;
+
+  ptr = start;
+  while (ptr != NULL)
+  {
+    if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
+    {
+      if (avro_value_get_by_name(&v_type_map, ptr->key, &v_type_string, NULL) == 0)
+      {
+        avro_value_get_string(&v_type_string, &p, &value_size);
+      }
+    }
+    //fprintf(stdout, "%u\n", value_size);
+    fprintf(stdout, "%s:  %s\n", ptr->key, p);
+    ptr = ptr->next;
+  }
+
+  avro_file_reader_close(db_r);
+
+  return 0;
+}
+
+
+void
+free_label_avro_data_memory(void)
+{
+  free_labels(start);
+  avro_value_iface_decref(if_type_record); //no need to decref the associated value
+  avro_value_iface_decref(if_type_map); //no need to decref the associated value
+  avro_value_iface_decref(if_type_string); //no need to decref the associated value
+  avro_schema_decref(sc_type_record);
+  avro_schema_decref(sc_type_map);
+  avro_schema_decref(sc_type_string);
+  //avro_value_decref(&v_type_record);
+  //avro_value_decref(&v_type_map);
+  //avro_value_decref(&v_type_string);
 }
