@@ -56,3 +56,44 @@ Here below is an abstraction of the future data-stream JSON ouput.
   "other3": "other3"
 }
 ```
+
+### Current AVRO schema
+
+Here below is reported the current AVRO schema used to define the label field (type string). 
+
+```JSON
+{                                                                                                                                                                                                                                                                                                                             
+  "type": "record",                                                                                                                                                                                                                                                                                                           
+  "name": "acct_data",                                                                                                                                                                                                                                                                                                        
+  "fields": [                                                                                                                                                                                                                                                                                                                 
+    {                                                                                                                                                                                                                                                                                                                         
+      "name": "label",                                                                                                                                                                                                                                                                                                        
+      "type": {                                                                                                                                                                                                                                                                                                               
+        "type": "string"                                                                                                                                                                                                                                                                                                      
+      }                                                                                                                                                                                                                                                                                                                       
+    }
+  ]
+}
+```
+
+### Future AVRO schema
+
+Here below is reported the future AVRO schema which will be used to define the new label field (type map fo strings).
+
+```JSON
+{
+  "type": "record",
+  "name": "acct_data",
+  "fields": [
+    {
+      "name": "label",
+      "type": {
+        "type": "map",
+        "values": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+```
