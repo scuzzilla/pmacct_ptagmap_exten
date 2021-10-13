@@ -31,10 +31,8 @@
 
 
 /* Global Variables */
-char LABELS0[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
-                 "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
-char LABELS1[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
-                 "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
+char LABELS[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
+                "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
 const int MAX_TOCKENS = 256; //Max amount of tokens per string: 128 Labels
 const char *DELIM = ",";
 //
@@ -64,14 +62,11 @@ void free_labels(struct label *);
 int
 main(void)
 {
-  struct label *start_w = labels_to_linked_list(LABELS0);
-  struct label *start_r = labels_to_linked_list(LABELS1);
-  struct label *ptr_w, *ptr_r;
-  printf("start_w:\n");
-  print_labels(start_w);
-  printf("\nstart_r:\n");
-  print_labels(start_r);
-  printf("\n---\n");
+  struct label *start = labels_to_linked_list(LABELS);
+  struct label *ptr;
+  printf("start -> linked-list:\n");
+  print_labels(start);
+  printf("\n\n---\n");
 
   sc_type_string = avro_schema_string();
   sc_type_map = avro_schema_map(sc_type_string);
@@ -108,18 +103,18 @@ main(void)
   avro_value_get_size(&v_type_map, &map_size);
   printf("before: %u\n", map_size);
 
-  ptr_w = start_w;
-  while (ptr_w != NULL)
+  ptr = start;
+  while (ptr != NULL)
   {
     if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
     {
-      if (avro_value_add(&v_type_map, ptr_w->key, &v_type_string, NULL, NULL) == 0)
+      if (avro_value_add(&v_type_map, ptr->key, &v_type_string, NULL, NULL) == 0)
       {
-        avro_value_set_string(&v_type_string, ptr_w->value);
+        avro_value_set_string(&v_type_string, ptr->value);
         avro_file_writer_append_value(db_w, &v_type_record);
       }
     }
-    ptr_w = ptr_w->next;
+    ptr = ptr->next;
   }
 
   avro_file_writer_flush(db_w);
@@ -140,25 +135,24 @@ main(void)
   size_t value_size;
   const char *p = NULL;
 
-  ptr_r = start_r;
-  while (ptr_r != NULL)
+  ptr = start;
+  while (ptr != NULL)
   {
     if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
     {
-      if (avro_value_get_by_name(&v_type_map, ptr_r->key, &v_type_string, NULL) == 0)
+      if (avro_value_get_by_name(&v_type_map, ptr->key, &v_type_string, NULL) == 0)
       {
         avro_value_get_string(&v_type_string, &p, &value_size);
       }
     }
     //fprintf(stdout, "%u\n", value_size);
-    fprintf(stdout, "%s:  %s\n", ptr_r->key, p);
-    ptr_r = ptr_r->next;
+    fprintf(stdout, "%s:  %s\n", ptr->key, p);
+    ptr = ptr->next;
   }
 
   avro_file_reader_close(db_r);
 
-  free_labels(start_w);
-  free_labels(start_r);
+  free_labels(start);
   avro_value_iface_decref(if_type_record); //no need to decref the associated value
   avro_value_iface_decref(if_type_map); //no need to decref the associated value
   avro_value_iface_decref(if_type_string); //no need to decref the associated value
