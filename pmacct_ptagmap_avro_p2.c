@@ -123,6 +123,27 @@ free_labels(struct label *start)
   }
 }
 
+
+char *
+labels_fs_normalization(char *labels)
+{
+  const char delim_find = '-';
+  const char delim_replace = ',';
+
+  char *lbls_normalized = strdup(labels);
+  printf("labels: %s\n", lbls_normalized);
+
+  char *curr = strchr(lbls_normalized, delim_find);
+  while (curr) {
+    *curr = delim_replace;
+    curr = strchr(curr, delim_find);
+  }
+  printf("labels normalized: %s\n", lbls_normalized);
+
+  return lbls_normalized;
+}
+
+
 struct label *
 labels_to_linked_list(char *label)
 {
@@ -279,24 +300,4 @@ free_label_avro_data_memory(void)
   //avro_value_decref(&v_type_record);
   //avro_value_decref(&v_type_map);
   //avro_value_decref(&v_type_string);
-}
-
-
-char *
-labels_fs_normalization(char *labels)
-{
-  const char delim_find = '-';
-  const char delim_replace = ',';
-
-  char *lbls_normalized = strdup(labels);
-  printf("labels: %s\n", lbls_normalized);
-
-  char *curr = strchr(lbls_normalized, delim_find);
-  while (curr) {
-    *curr = delim_replace;
-    curr = strchr(curr, delim_find);
-  }
-  printf("labels normalized: %s\n", lbls_normalized);
-
-  return lbls_normalized;
 }
