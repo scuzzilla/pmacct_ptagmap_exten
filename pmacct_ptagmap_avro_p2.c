@@ -1,6 +1,6 @@
 /*
  * third prototype - linked-list logic
- * gcc pmacct_ptagmap_avro.p2.c -o pmacct_ptagmap_avro.p2 -lavro
+ * gcc pmacct_ptagmap_avro_p2.c -o bin/pmacct_ptagmap_avro_p2 -lavro
  */
 
 #include <string.h>
@@ -31,8 +31,8 @@
 
 
 /* Global Variables */
-char LABELS[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
-                "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
+char LABELS[] = "node_id_key1-node_id_value1,platform_id_key1-platform_id_value1,"
+                "node_id_key2-node_id_value2,platform_id_key2-platform_id_value2";
 const int MAX_TOCKENS = 256; //Max amount of tokens per string: 128 Labels
 const char *DELIM = ",";
 //
@@ -56,6 +56,7 @@ struct label *append_label(struct label *, struct label *);
 struct label *labels_to_linked_list(char *);
 void print_labels(struct label *);
 void free_labels(struct label *);
+char *labels_fs_normalization(char *);
 //
 // --- AVRO prototypes ---
 //
@@ -68,11 +69,13 @@ void free_label_avro_data_memory(void);
 int
 main(void)
 {
-  start = labels_to_linked_list(LABELS);
+  char *lbls_norm = labels_fs_normalization(LABELS);
+  start = labels_to_linked_list(lbls_norm);
 
   compose_label_avro_schema();
   compose_label_avro_data(start);
   print_label_avro_data(start);
+  free_labels(start);
   free_label_avro_data_memory();
 
   return 0;
@@ -267,7 +270,6 @@ print_label_avro_data(struct label *start)
 void
 free_label_avro_data_memory(void)
 {
-  free_labels(start);
   avro_value_iface_decref(if_type_record); //no need to decref the associated value
   avro_value_iface_decref(if_type_map); //no need to decref the associated value
   avro_value_iface_decref(if_type_string); //no need to decref the associated value
@@ -277,4 +279,24 @@ free_label_avro_data_memory(void)
   //avro_value_decref(&v_type_record);
   //avro_value_decref(&v_type_map);
   //avro_value_decref(&v_type_string);
+}
+
+
+char *
+labels_fs_normalization(char *labels)
+{
+  const char delim_find = '-';
+  const char delim_replace = ',';
+
+  char *lbls_normalized = strdup(labels);
+  printf("labels: %s\n", lbls_normalized);
+
+  char *curr = strchr(lbls_normalized, delim_find);
+  while (curr) {
+    *curr = delim_replace;
+    curr = strchr(curr, delim_find);
+  }
+  printf("labels normalized: %s\n", lbls_normalized);
+
+  return lbls_normalized;
 }

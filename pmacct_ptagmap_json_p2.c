@@ -1,6 +1,6 @@
 /*
  * third prototype - linked-list logic
- * gcc pmacct_ptagmap_p2.c -o pmacct_ptagmap_p2 -ljansson
+ * gcc pmacct_ptagmap_json_p2.c -o bin/pmacct_ptagmap_json_p2 -ljansson
  */
 
 #include <string.h>
