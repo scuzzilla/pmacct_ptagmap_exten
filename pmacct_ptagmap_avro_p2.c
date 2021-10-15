@@ -198,7 +198,7 @@ compose_label_avro_data(struct label *start)
   {
     fprintf(stderr, "Error: %s\n", avro_strerror());
     return -1;
-	}
+  }
 
   size_t  map_size;
   avro_value_get_size(&v_type_map, &map_size);
@@ -240,7 +240,7 @@ print_label_avro_data(struct label *start)
   {
     fprintf(stderr, "Error: %s\n", avro_strerror());
     return -1;
-	}
+  }
 
   avro_file_reader_read_value(db_r, &v_type_record);
   size_t value_size;
