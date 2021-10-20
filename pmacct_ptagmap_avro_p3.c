@@ -12,7 +12,7 @@
  *
  * 4. Link your application; make sure to link against -lcdada:
  *    cd ~/Projects/pmacct_ptagmap_exten/
- *    gcc pmacct_ptagmap_avro_p3.c autogen_cdada_ptm_label.o -o bin/pmacct_ptagmap_avro_p3.c -lcdada -lstdc++ -lavro
+ *    gcc pmacct_ptagmap_avro_p3.c autogen_cdada_ptm_label.o -o bin/pmacct_ptagmap_avro_p3 -lcdada -lstdc++ -lavro
  */
 
 #include <string.h>
