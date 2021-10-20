@@ -1,177 +1,105 @@
 /*
- * third prototype - linked-list logic
- * gcc pmacct_ptagmap_avro_p2.c -o bin/pmacct_ptagmap_avro_p2 -lavro
+ * fourth prototype - linked-list logic with libcdada (AVRO version)
+ *
+ * 1. Invoke generator with the types you want to support
+ *    ~/Projects/libcdada/tools/cdada-gen list:ptm_label -o ~/Projects/pmacct_ptagmap_exten/autogen_cdada_ptm_label.cc
+ *
+ * 2. Add header includes for types 'ptm_label' in the place holder
+ *    vim ~/Projects/pmacct_ptagmap_exten/autogen_cdada_ptm_label.cc
+ *
+ * 3. Add to your build system
+ *    g++ -c ~/Projects/pmacct_ptagmap_exten/autogen_cdada_ptm_label.cc
+ *
+ * 4. Link your application; make sure to link against -lcdada:
+ *    cd ~/Projects/pmacct_ptagmap_exten/
+ *    gcc pmacct_ptagmap_avro_p3.c autogen_cdada_ptm_label.o -o bin/pmacct_ptagmap_avro_p3.c -lcdada -lstdc++ -lavro
  */
 
 #include <string.h>
 #include <avro.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cdada/list.h>
+#include <cdada/str.h>
+#include "cdada_types/ptm_label.h"
 
-
-/*
- * 1. schema string init -> avro_schema_t sc_type_string | sc_map_value
- * 2. schema map init    -> avro_schema_t sc_type_map    | sc_map_key, sc_map_value
- * 3. schema record init -> avro_schema_t sc_type_record | sc_rcrd_name, sc_rcrd_space, sc_rcrd_field_name
- * ---------------------
- * 1. append schema string to schema map
- * 2. append schema map to schema record
- * -------------------------------------
- * 1. create an iface to the record type (my assumption is that it should be enough)
- * ---------------------------------------------------------------------------------
- * 1. add value string to the map -> avro_value_t v_type_string
- * 2. add value map to the record -> avro_value_t v_type_map
- *
- * code simplification - main blocks:
- *
- * - schema init/dump
- * - data load
- * - data print
- */
+CDADA_LIST_CUSTOM_TYPE_DECL(ptm_label);
 
 
 /* Global Variables */
-char LABELS[] = "node_id_key1-node_id_value1,platform_id_key1-platform_id_value1,"
-                "node_id_key2-node_id_value2,platform_id_key2-platform_id_value2";
-const int MAX_TOCKENS = 256; //Max amount of tokens per string: 128 Labels
+char LABELS[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
+                "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
+const int MAX_TOCKENS = 256;
 const char *DELIM = ",";
 //
 // --- AVRO global variables ---
 //
-struct label *start;
 avro_schema_t sc_type_record, sc_type_map, sc_type_string;
 avro_value_t v_type_string, v_type_map, v_type_record;
 avro_value_iface_t *if_type_record, *if_type_map, *if_type_string;
 
-/* Data structures */
-struct label {
-  char *key;
-  char *value;
-  struct label *next;
-};
-
-/* Function prototypes - linked-list logic */
-struct label *create_label(char *, char *);
-struct label *append_label(struct label *, struct label *);
-struct label *labels_to_linked_list(char *);
-void print_labels(struct label *);
-void free_labels(struct label *);
-char *labels_fs_normalization(char *);
+/* Function prototypes */
+cdada_list_t *ptm_labels_to_linked_list(char *);
 //
 // --- AVRO prototypes ---
 //
 void compose_label_avro_schema(void);
-int compose_label_avro_data(struct label *);
-int print_label_avro_data(struct label *);
+int compose_label_avro_data(cdada_list_t *, int);
+int print_label_avro_data(cdada_list_t *, int);
 void free_label_avro_data_memory(void);
 
 
 int
 main(void)
 {
-  char *lbls_norm = labels_fs_normalization(LABELS);
-  start = labels_to_linked_list(lbls_norm);
+  /* labels normalization */
+  cdada_str_t *lbls_cdada = cdada_str_create(LABELS);
+  cdada_str_replace_all(lbls_cdada, "-", DELIM);
+  const char *lbls_norm = cdada_str(lbls_cdada);
+
+  /* linked-list creation */
+  ptm_label lbl;
+  cdada_list_t *ptm_ll = ptm_labels_to_linked_list(LABELS);
+  int ll_size = cdada_list_size(ptm_ll);
 
   compose_label_avro_schema();
-  compose_label_avro_data(start);
-  print_label_avro_data(start);
-  free_labels(start);
+  compose_label_avro_data(ptm_ll, ll_size);
+  print_label_avro_data(ptm_ll, ll_size);
   free_label_avro_data_memory();
+
+  cdada_list_destroy(ptm_ll);
 
   return 0;
 }
 
 
-struct label *
-create_label(char *tkn_key, char *tkn_value)
+/* pre-tag map labels to linked-list*/
+cdada_list_t *
+ptm_labels_to_linked_list(char *ptm_labels)
 {
-  struct label *ptr;
-  ptr = (struct label *) malloc(sizeof(struct label));
-  ptr->key = tkn_key;
-  ptr->value = tkn_value;
-  ptr->next = NULL;
-  return ptr;
-}
+  cdada_list_t *ptm_linked_list = cdada_list_create_custom(ptm_label);
+  ptm_label lbl;
 
-struct label *
-append_label(struct label *end, struct label *new_label_ptr)
-{
-  end->next = new_label_ptr;
-  return(end->next);
-}
-
-void
-print_labels(struct label *start)
-{
-  struct label *ptr;
-  ptr = start;
-  while(ptr != NULL) {
-    printf("%s: %s\n", ptr->key, ptr->value);
-    ptr = ptr->next;
-  }
-}
-
-void
-free_labels(struct label *start)
-{
-  struct label *ptr = start;
-  struct label *tmp;
-  while (ptr!=NULL) {
-    tmp = ptr->next;
-    free(ptr);
-    ptr = tmp;
-  }
-}
-
-
-char *
-labels_fs_normalization(char *labels)
-{
-  const char delim_find = '-';
-  const char delim_replace = ',';
-
-  char *lbls_normalized = strdup(labels);
-  printf("labels: %s\n", lbls_normalized);
-
-  char *curr = strchr(lbls_normalized, delim_find);
-  while (curr) {
-    *curr = delim_replace;
-    curr = strchr(curr, delim_find);
-  }
-  printf("labels normalized: %s\n", lbls_normalized);
-
-  return lbls_normalized;
-}
-
-
-struct label *
-labels_to_linked_list(char *label)
-{
   char *token = NULL;
   char *tokens[MAX_TOCKENS];
-  struct label *start, *new_label_ptr, *end;
 
-  int idx_0 = 0;
-  for (token = strtok(label, DELIM); token != NULL; token = strtok(NULL, DELIM))
+  int tokens_counter = 0;
+  for (token = strtok(ptm_labels, DELIM); token != NULL; token = strtok(NULL, DELIM))
   {
-    tokens[idx_0] = token;
-    idx_0++;
+    tokens[tokens_counter] = token;
+    tokens_counter++;
   }
 
-  /* Head of the labels' linked list */
-  start = create_label(tokens[0], tokens[1]);
-  end = start;
-
-  int idx_1 = 2;
-  while (idx_1 < idx_0)
+  int list_counter;
+  for (list_counter = 0; list_counter < tokens_counter; list_counter+=2)
   {
-    new_label_ptr = create_label(tokens[idx_1], tokens[idx_1 + 1]);
-    end = append_label(end, new_label_ptr);
-
-    idx_1 += 2;
+    memset(&lbl, 0, sizeof(lbl));
+    lbl.key = tokens[list_counter];
+    lbl.value = tokens[list_counter + 1];
+    cdada_list_push_back(ptm_linked_list, &lbl);
   }
 
-  return start;
+  return ptm_linked_list;
 }
 //
 // --- AVRO functions ---
@@ -194,12 +122,18 @@ compose_label_avro_schema(void)
 
 
 int
-compose_label_avro_data(struct label *start)
+compose_label_avro_data(cdada_list_t *ll, int ll_size)
 {
-  struct label *ptr;
+  ptm_label lbl;
 
   printf("start -> linked-list:\n");
-  print_labels(start);
+  int idx_0;
+  for (idx_0 = 0; idx_0 < ll_size; idx_0++)
+  {
+    cdada_list_get(ll,idx_0,&lbl);
+    printf("key: %s\n", lbl.key);
+    printf("value: %s\n", lbl.value);
+  }
   printf("\n\n---\n");
 
   if_type_record = avro_generic_class_from_schema(sc_type_record);
@@ -225,18 +159,18 @@ compose_label_avro_data(struct label *start)
   avro_value_get_size(&v_type_map, &map_size);
   printf("before: %u\n", map_size);
 
-  ptr = start;
-  while (ptr != NULL)
+  int idx_1;
+  for (idx_1 = 0; idx_1 < ll_size; idx_1++)
   {
+    cdada_list_get(ll, idx_1, &lbl);
     if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
     {
-      if (avro_value_add(&v_type_map, ptr->key, &v_type_string, NULL, NULL) == 0)
+      if (avro_value_add(&v_type_map, lbl.key, &v_type_string, NULL, NULL) == 0)
       {
-        avro_value_set_string(&v_type_string, ptr->value);
+        avro_value_set_string(&v_type_string, lbl.value);
         avro_file_writer_append_value(db_w, &v_type_record);
       }
     }
-    ptr = ptr->next;
   }
 
   avro_file_writer_flush(db_w);
@@ -250,9 +184,9 @@ compose_label_avro_data(struct label *start)
 
 
 int
-print_label_avro_data(struct label *start)
+print_label_avro_data(cdada_list_t *ll, int ll_size)
 {
-  struct label *ptr;
+  ptm_label lbl;
 
   const char *dbname = "avro_record.db";
   avro_file_reader_t db_r;
@@ -267,19 +201,19 @@ print_label_avro_data(struct label *start)
   size_t value_size;
   const char *p = NULL;
 
-  ptr = start;
-  while (ptr != NULL)
+  int idx_0;
+  for (idx_0 = 0; idx_0 < ll_size; idx_0++)
   {
+    cdada_list_get(ll, idx_0, &lbl);
     if (avro_value_get_by_name(&v_type_record, "label", &v_type_map, NULL) == 0)
     {
-      if (avro_value_get_by_name(&v_type_map, ptr->key, &v_type_string, NULL) == 0)
+      if (avro_value_get_by_name(&v_type_map, lbl.key, &v_type_string, NULL) == 0)
       {
         avro_value_get_string(&v_type_string, &p, &value_size);
       }
     }
     //fprintf(stdout, "%u\n", value_size);
-    fprintf(stdout, "%s:  %s\n", ptr->key, p);
-    ptr = ptr->next;
+    fprintf(stdout, "%s:  %s\n", lbl.key, p);
   }
 
   avro_file_reader_close(db_r);
