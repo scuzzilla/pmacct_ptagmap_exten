@@ -27,8 +27,8 @@ CDADA_LIST_CUSTOM_TYPE_DECL(ptm_label);
 
 
 /* Global Variables */
-char LABELS[] = "node_id_key1,node_id_value1,platform_id_key1,platform_id_value1,"
-                "node_id_key2,node_id_value2,platform_id_key2,platform_id_value2";
+char LABELS[] = "node_id_key1-node_id_value1,platform_id_key1-platform_id_value1,"
+                "node_id_key2-node_id_value2,platform_id_key2-platform_id_value2";
 const int MAX_TOCKENS = 256;
 const char *DELIM = ",";
 //
@@ -55,11 +55,11 @@ main(void)
   /* labels normalization */
   cdada_str_t *lbls_cdada = cdada_str_create(LABELS);
   cdada_str_replace_all(lbls_cdada, "-", DELIM);
-  const char *lbls_norm = cdada_str(lbls_cdada);
+  char *lbls_norm = cdada_str(lbls_cdada);
 
   /* linked-list creation */
   ptm_label lbl;
-  cdada_list_t *ptm_ll = ptm_labels_to_linked_list(LABELS);
+  cdada_list_t *ptm_ll = ptm_labels_to_linked_list(lbls_norm);
   int ll_size = cdada_list_size(ptm_ll);
 
   compose_label_avro_schema();
