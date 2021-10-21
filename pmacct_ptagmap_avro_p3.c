@@ -130,7 +130,7 @@ compose_label_avro_data(cdada_list_t *ll, int ll_size)
   int idx_0;
   for (idx_0 = 0; idx_0 < ll_size; idx_0++)
   {
-    cdada_list_get(ll,idx_0,&lbl);
+    cdada_list_get(ll, idx_0, &lbl);
     printf("key: %s\n", lbl.key);
     printf("value: %s\n", lbl.value);
   }
