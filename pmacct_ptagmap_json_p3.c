@@ -55,7 +55,6 @@ main(void)
 
   json_t *root_l0 = json_object();
   json_t *root_l1 = compose_label_json_data(ptm_ll, ll_size);
-  json_t *j_str_tmp = NULL;
 
   json_object_set_new(root_l0, "label", root_l1);
 
